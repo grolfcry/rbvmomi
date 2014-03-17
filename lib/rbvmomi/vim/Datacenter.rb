@@ -11,7 +11,20 @@ class RbVmomi::VIM::Datacenter
 
   # Traverse the given inventory +path+ to find a VirtualMachine.
   def find_vm path
-    vmFolder.traverse path, RbVmomi::VIM::VirtualMachine
+    return traverse_folders_for_vm(vmFolder, path)
+  end
+
+  def traverse_folders_for_vm(folder, vmname)
+    children = folder.children.find_all
+    children.each do |child|
+      if child.class == RbVmomi::VIM::VirtualMachine && child.name == vmname
+        return child
+      elsif child.class == RbVmomi::VIM::Folder
+        vm = traverse_folders_for_vm(child, vmname)
+        if vm then return vm end
+      end
+    end
+    return false
   end
 end
 
